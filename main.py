@@ -120,8 +120,6 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
         log.info(f"result: {bug_inducing_commits}")
         bugfix_commits[i]["inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
 
-    if os.path.exists(out_json):
-        out_json = out_json.replace('.json', f'.{random.randint(1, 99)}.json')
     with open(out_json, 'w') as out:
         json.dump(bugfix_commits, out)
 
@@ -155,7 +153,7 @@ if __name__ == "__main__":
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
     conf_file_name = Path(args.conf_file).name.split('.')[0]
-    out_json = os.path.join(out_dir, f'bic_{conf_file_name}_{int(ts())}.json')
+    out_json = os.path.join(out_dir, f'bics.json')
 
     if not szz_name:
         log.error('The configuration file does not define the SZZ name. Please, fix.')
