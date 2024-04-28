@@ -118,7 +118,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
             exit(-3)
 
         log.info(f"result: {bug_inducing_commits}")
-        bugfix_commits[i]["inducing_commit_hash"] = [bic.hexsha for bic in bug_inducing_commits if bic]
+        bugfix_commits[i]["inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
 
     if os.path.exists(out_json):
         out_json = out_json.replace('.json', f'.{random.randint(1, 99)}.json')

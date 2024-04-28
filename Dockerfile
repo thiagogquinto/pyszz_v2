@@ -1,6 +1,6 @@
 FROM python:3.7-slim-buster
 
-RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list && \ 
+RUN echo "deb http://archive.debian.org/debian buster-backports main" >> /etc/apt/sources.list && \ 
   apt-get update && apt-get upgrade -y --no-install-recommends && \
   apt-get install -y openjdk-11-jre-headless && \
   apt-get install -y --no-install-recommends wget libarchive13 libcurl4 libxml2 python-magic && \

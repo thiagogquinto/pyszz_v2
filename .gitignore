@@ -183,3 +183,6 @@ modules.xml
 
 temp/
 __pycache__
+
+# Directory of the Github repositories
+repos/

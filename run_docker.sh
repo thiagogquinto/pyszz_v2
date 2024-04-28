@@ -16,7 +16,7 @@ mkdir -p out
 # replace with `docker run -d` to run the container in detached mode
 docker run \
         -v $PWD/out:/usr/src/app/out \
-        -v $bugfix_commits_file:/usr/src/app/bugfix_commits.json \
-        -v $conf_file:/usr/src/app/conf.yml \
-        -v $repos_dir:/usr/src/app/cloned \
+        -v $(pwd)/$bugfix_commits_file:/usr/src/app/bugfix_commits.json \
+        -v $(pwd)/$conf_file:/usr/src/app/conf.yml \
+        -v $(pwd)/$repos_dir:/usr/src/app/cloned \
         pyszz bugfix_commits.json conf.yml cloned/
