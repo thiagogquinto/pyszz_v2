@@ -71,7 +71,10 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
         elif szz_name == 'r':
             r_szz = RSZZ(repo_full_name=repo_name, repo_url=repo_url, repos_dir=repos_dir)
             imp_files = r_szz.get_impacted_files(fix_commit_hash=fix_commit, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
-            bug_inducing_commits = r_szz.find_bic(fix_commit_hash=fix_commit,
+            if imp_files == []:
+                bug_inducing_commits = '-'
+            else:
+                bug_inducing_commits = r_szz.find_bic(fix_commit_hash=fix_commit,
                                         impacted_files=imp_files,
                                         max_change_size=conf.get('max_change_size'),
                                         detect_move_from_other_files=DetectLineMoved(conf.get('detect_move_from_other_files')),
@@ -118,7 +121,10 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
             exit(-3)
 
         log.info(f"result: {bug_inducing_commits}")
-        bugfix_commits[i]["inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
+        if bug_inducing_commits == '-':
+            bugfix_commits[i]["inducing_commit_hash_pyszz"] = '-'
+        else:
+            bugfix_commits[i]["inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
 
     with open(out_json, 'w') as out:
         json.dump(bugfix_commits, out)
@@ -153,7 +159,7 @@ if __name__ == "__main__":
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
     conf_file_name = Path(args.conf_file).name.split('.')[0]
-    out_json = os.path.join(out_dir, f'bics.json')
+    out_json = os.path.join(out_dir, 'bics.json')
 
     if not szz_name:
         log.error('The configuration file does not define the SZZ name. Please, fix.')

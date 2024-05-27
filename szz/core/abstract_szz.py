@@ -103,7 +103,11 @@ class AbstractSZZ(ABC):
         """
         impacted_files = list()
 
-        fix_commit = PyDrillerGitRepo(self.repository_path).get_commit(fix_commit_hash)
+        try:
+            fix_commit = PyDrillerGitRepo(self.repository_path).get_commit(fix_commit_hash)
+        except Exception as e:
+            log.error(f"unable to get commit: {e}")
+            return []
         for mod in fix_commit.modifications:
             # skip newly added files
             if not mod.old_path:
