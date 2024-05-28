@@ -143,6 +143,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.isfile(args.input_json):
+        print(args.input_json)
+        os.system("pwd")
         log.error('invalid input json')
         exit(-2)
     if not os.path.isfile(args.conf_file):
