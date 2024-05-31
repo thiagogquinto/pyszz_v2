@@ -24,13 +24,25 @@ import random
 log.basicConfig(level=log.INFO, format='%(asctime)s :: %(funcName)s - %(levelname)s :: %(message)s')
 log.getLogger('pydriller').setLevel(log.WARNING)
 
+TIME_LIMIT = 5 * 3600 + 30 * 60  # 5 hours + 30 minutes
 
 def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
+
+    start_time = ts()
+
     with open(input_json, 'r') as in_file:
         bugfix_commits = json.loads(in_file.read())
 
     tot = len(bugfix_commits)
     for i, commit in enumerate(bugfix_commits):
+
+        if ts() - start_time > TIME_LIMIT:
+            log.info(f"Time running: {ts() - start_time}")
+            log.info(f"Time limit reached. Stopping at {i} of {tot} commits")
+            break
+
+        log.info(f"Time remaining: {TIME_LIMIT - (ts() - start_time)}")
+
         bug_inducing_commits = set()
         repo_name = commit['repo_name']
         repo_url = f'https://test:test@github.com/{repo_name}.git'  # using test:test as git login to skip private repos during clone
