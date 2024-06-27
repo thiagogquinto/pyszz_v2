@@ -46,10 +46,16 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
         bug_inducing_commits = set()
         repo_name = commit['repo_name']
         repo_url = f'https://test:test@github.com/{repo_name}.git'  # using test:test as git login to skip private repos during clone
-        fix_commit = commit['fix_commit_hash']
+        fix_commit = commit['Target Commit SHA']
 
-        log.info(f'{i + 1} of {tot}: {repo_name} {fix_commit}')
-        
+        fix_commit_target = commit['Target Commit SHA']
+        if fix_commit_target is None:
+            fix_commit_target = ''.join(random.choices('0123456789abcdef', k=40))
+
+        fix_commit_closest = commit['Closest Commit SHA']
+        if fix_commit_closest is None:
+            fix_commit_closest = ''.join(random.choices('0123456789abcdef', k=40)) 
+
         issue_date = None
         if conf.get('issue_date_filter', None):
             issue_date = parse_issue_date(commit)
@@ -82,17 +88,32 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
                                         filter_revert_commits=conf.get('filter_revert_commits', False))
         elif szz_name == 'r':
             r_szz = RSZZ(repo_full_name=repo_name, repo_url=repo_url, repos_dir=repos_dir)
-            imp_files = r_szz.get_impacted_files(fix_commit_hash=fix_commit, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
-            if imp_files == []:
-                bug_inducing_commits = '-'
+            
+
+            imp_files_target = r_szz.get_impacted_files(fix_commit_hash=fix_commit_target, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
+            imp_files_closest = r_szz.get_impacted_files(fix_commit_hash=fix_commit_closest, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
+            if imp_files == [] and imp_files_closest == []:
+                bug_inducing_commits_target = '-'
+                bug_inducing_commits_closest = '-'
             else:
-                bug_inducing_commits = r_szz.find_bic(fix_commit_hash=fix_commit,
-                                        impacted_files=imp_files,
+                if imp_files_target == [] and imp_files_closest != []:
+                    bug_inducing_commits_target = '-'
+                    bug_inducing_commits_closest = r_szz.find_bic(fix_commit_hash=fix_commit_closest,
+                                        impacted_files=imp_files_closest,
                                         max_change_size=conf.get('max_change_size'),
                                         detect_move_from_other_files=DetectLineMoved(conf.get('detect_move_from_other_files')),
                                         issue_date_filter=conf.get('issue_date_filter'),
                                         issue_date=issue_date,
                                         filter_revert_commits=conf.get('filter_revert_commits', False))
+                elif imp_files_target != [] and imp_files_closest == []:
+                    bug_inducing_commits_target = r_szz.find_bic(fix_commit_hash=fix_commit_target,
+                                        impacted_files=imp_files_target,
+                                        max_change_size=conf.get('max_change_size'),
+                                        detect_move_from_other_files=DetectLineMoved(conf.get('detect_move_from_other_files')),
+                                        issue_date_filter=conf.get('issue_date_filter'),
+                                        issue_date=issue_date,
+                                        filter_revert_commits=conf.get('filter_revert_commits', False))
+                    bug_inducing_commits_closest = '-'
         elif szz_name == 'l':
             l_szz = LSZZ(repo_full_name=repo_name, repo_url=repo_url, repos_dir=repos_dir)
             imp_files = l_szz.get_impacted_files(fix_commit_hash=fix_commit, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
@@ -133,11 +154,15 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
             exit(-3)
 
         log.info(f"result: {bug_inducing_commits}")
-        if bug_inducing_commits == '-':
-            bugfix_commits[i]["inducing_commit_hash_pyszz"] = '-'
-        else:
-            bugfix_commits[i]["inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
 
+        if bug_inducing_commits_target == '-':
+            bugfix_commits[i]["target_inducing_commit_hash_pyszz"] = '-'
+            bugfix_commits[i]["target_inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
+
+        if bug_inducing_commits_closest == '-':
+            bugfix_commits[i]["closest_inducing_commit_hash_pyszz"] = '-'
+            bugfix_commits[i]["closest_inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
+            
     with open(out_json, 'w') as out:
         json.dump(bugfix_commits, out)
 
