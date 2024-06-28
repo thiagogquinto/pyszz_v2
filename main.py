@@ -108,11 +108,9 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
                                         filter_revert_commits=conf.get('filter_revert_commits', False))
         elif szz_name == 'r':
             r_szz = RSZZ(repo_full_name=repo_name, repo_url=repo_url, repos_dir=repos_dir)
-            
-
             imp_files_target = r_szz.get_impacted_files(fix_commit_hash=fix_commit_target, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
             imp_files_closest = r_szz.get_impacted_files(fix_commit_hash=fix_commit_closest, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
-            if imp_files == [] and imp_files_closest == []:
+            if imp_files_target == [] and imp_files_closest == []:
                 bug_inducing_commits_target = '-'
                 bug_inducing_commits_closest = '-'
             else:
