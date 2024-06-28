@@ -39,7 +39,7 @@ def clear_directory(directory):
             os.remove(file_path)
 
 def clone_repo(repo_path: str):
-    os.system(f'"git clone https://github.com/{repo_path}.git repos_dir/{repo_path}')
+    os.system(f"git clone https://github.com/{repo_path}.git repos_dir/{repo_path}")
 
 def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
 
