@@ -38,8 +38,8 @@ def clear_directory(directory):
         else:
             os.remove(file_path)
 
-def clone_repo(repo_path: str):
-    os.system(f"git clone https://github.com/{repo_path}.git repos_dir/{repo_path}")
+# def clone_repo(repo_path: str):
+#     os.system(f"git clone https://github.com/{repo_path}.git repos_dir/{repo_path}")
 
 def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
 
@@ -62,7 +62,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
             if previous_repo_name is not None:
                 clear_directory('repos_dir')
             log.info(f"Cloning repository {repo_name}")
-            clone_repo(repo_name)
+            # clone_repo(repo_name)
             previous_repo_name = repo_name
 
         repo_url = f'https://test:test@github.com/{repo_name}.git'  # using test:test as git login to skip private repos during clone
