@@ -56,6 +56,8 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
             break
 
         bug_inducing_commits = set()
+        bug_inducing_commits_target = set()
+        bug_inducing_commits_closest = set()
         repo_name = commit['repo_name']
 
         if previous_repo_name != repo_name:
