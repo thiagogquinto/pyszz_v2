@@ -3,6 +3,7 @@ import json
 import logging as log
 import os
 from time import time as ts
+import shutil
 
 import dateparser
 import yaml
@@ -26,6 +27,20 @@ log.getLogger('pydriller').setLevel(log.WARNING)
 
 TIME_LIMIT = 5 * 3600 + 30 * 60  # 5 hours + 30 minutes
 
+if not os.path.exists('repos_dir'):
+    os.makedirs('repos_dir')
+
+def clear_directory(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        if os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+        else:
+            os.remove(file_path)
+
+def clone_repo(repo_path: str):
+    os.system(f'"git clone https://github.com/{repo_path}.git repos_dir/{repo_path}')
+
 def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
 
     start_time = ts()
@@ -33,18 +48,23 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
     with open(input_json, 'r') as in_file:
         bugfix_commits = json.loads(in_file.read())
 
+    previous_repo_name = None
     tot = len(bugfix_commits)
     for i, commit in enumerate(bugfix_commits):
 
         if ts() - start_time > TIME_LIMIT:
-            log.info(f"Time running: {ts() - start_time}")
-            log.info(f"Time limit reached. Stopping at {i} of {tot} commits")
             break
-
-        log.info(f"Time remaining: {TIME_LIMIT - (ts() - start_time)}")
 
         bug_inducing_commits = set()
         repo_name = commit['repo_name']
+
+        if previous_repo_name != repo_name:
+            if previous_repo_name is not None:
+                clear_directory('repos_dir')
+            log.info(f"Cloning repository {repo_name}")
+            clone_repo(repo_name)
+            previous_repo_name = repo_name
+
         repo_url = f'https://test:test@github.com/{repo_name}.git'  # using test:test as git login to skip private repos during clone
         fix_commit = commit['Target Commit SHA']
 
