@@ -1,7 +1,6 @@
 import logging as log
 import ntpath
 import os
-import random
 from abc import ABC, abstractmethod
 from enum import Enum
 from shutil import copytree
@@ -14,22 +13,6 @@ from pydriller import ModificationType, GitRepository as PyDrillerGitRepo
 
 from options import Options
 from szz.core.comment_parser import parse_comments
-
-def generate_random_number(minimo, maximo):
-    return random.randint(minimo, maximo)
-
-error_logger = log.getLogger("pyszz_log")
-error_logger.setLevel(log.ERROR)
-
-error_logger_handler = log.FileHandler(f"../../../logs/pyszz_error_{generate_random_number(1, 1000)}.log")
-error_logger_handler.setLevel(log.ERROR)
-
-error_logger_formatter = log.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-error_logger_handler.setFormatter(error_logger_formatter)
-
-error_logger.addHandler(error_logger_handler)
-
-
 
 class AbstractSZZ(ABC):
     """
@@ -123,7 +106,6 @@ class AbstractSZZ(ABC):
             fix_commit = PyDrillerGitRepo(self.repository_path).get_commit(fix_commit_hash)
         except Exception as e:
             log.error(f"unable to get commit: {e}")
-            error_logger.error(f"unable to get commit: {e}")
             return []
         for mod in fix_commit.modifications:
             # skip newly added files
