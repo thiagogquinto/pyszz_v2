@@ -107,6 +107,12 @@ class AbstractSZZ(ABC):
         except Exception as e:
             log.error(f"unable to get commit: {e}")
             return "-"
+        
+        changed_files = [mod.filename.split('.')[1] for mod in fix_commit.modifications]
+
+        if any(ext not in ['rst', 'md', 'txt'] for ext in changed_files):  
+            file_ext_to_parse = [ext for ext in changed_files if ext not in ['rst', 'md', 'txt']] 
+
         for mod in fix_commit.modifications:
             # skip newly added files
             if not mod.old_path:
