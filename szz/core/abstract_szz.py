@@ -108,6 +108,10 @@ class AbstractSZZ(ABC):
             log.error(f"unable to get commit: {e}")
             return "-"
         
+        for mod in fix_commit.modifications:
+            log.info(f"processing file: {mod.filename}")
+
+        log.info("dps de processar os arquivos")        
         changed_files = [mod.filename.split('.')[1] for mod in fix_commit.modifications]
 
         if any(ext not in ['rst', 'md', 'txt'] for ext in changed_files):  
