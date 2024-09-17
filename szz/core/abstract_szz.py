@@ -112,10 +112,12 @@ class AbstractSZZ(ABC):
             log.info(f"processing file: {mod.filename}")
 
         log.info("dps de processar os arquivos")        
-        changed_files = [mod.filename.split('.')[1] for mod in fix_commit.modifications]
+        changed_files = [mod.filename.split('.')[1] for mod in fix_commit.modifications if '.' in mod.filename]
 
         if any(ext not in ['rst', 'md', 'txt'] for ext in changed_files):  
             file_ext_to_parse = [ext for ext in changed_files if ext not in ['rst', 'md', 'txt']] 
+
+        log.info(f"file_ext_to_parse: {file_ext_to_parse}")
 
         for mod in fix_commit.modifications:
             # skip newly added files
