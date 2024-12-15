@@ -129,10 +129,17 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
             exit(-3)
 
         log.info(f"result: {bug_inducing_commits}")
-        if bug_inducing_commits == '-':
-            bugfix_commits[i]["inducing_commit_hash_pyszz"] = '-'
-        else:
-            bugfix_commits[i]["inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
+
+        if szz_name == 'r':
+            if bug_inducing_commits == '-':
+                bugfix_commits[i]["inducing_commit_hash_pyszz"] = '-'
+            else:
+                bugfix_commits[i]["inducing_commit_hash_pyszz"] = [bic.hexsha for bic in bug_inducing_commits if bic]
+        elif szz_name == 'pd':
+            if bug_inducing_commits == '-':
+                bugfix_commits[i]["inducing_commit_hash_pd"] = '-'
+            else:
+                bugfix_commits[i]["inducing_commit_hash_pd"] = [bic.hexsha for bic in bug_inducing_commits if bic]
 
     with open(out_json, 'w') as out:
         json.dump(bugfix_commits, out)
