@@ -18,7 +18,7 @@ issue_date_filter: true
 # ignore_revs_file_path: /path/to/revs/file
 
 ### ignore commits during blame with a change size higher than the specified value
-max_change_size: 40
+max_change_size: 20
 
 ### set -M parameter for blame. Set to 'false' to use basic blame
 detect_move_within_file: true
