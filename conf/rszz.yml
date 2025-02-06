@@ -2,12 +2,12 @@
 szz_name: r
 
 ### obtain the diff only for the specified file extensions
-# file_ext_to_parse:
+file_ext_to_parse:
 #  - c
 #  - cpp
 #  - cs
 #  - h
-#  - java
+ - java
 #  - js
 #  - py
 
