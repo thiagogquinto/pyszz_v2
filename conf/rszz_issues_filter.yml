@@ -9,7 +9,7 @@ file_ext_to_parse:
 #  - h
  - java
 #  - js
-#  - py
+ - py
 
 ### filter commits using issue_date field
 issue_date_filter: true
