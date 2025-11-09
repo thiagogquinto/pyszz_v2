@@ -183,3 +183,4 @@ modules.xml
 
 temp/
 __pycache__
+.venv/
