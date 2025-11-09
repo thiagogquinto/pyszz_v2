@@ -1,21 +1,17 @@
-FROM python:3.7-slim-buster
+FROM python:3.9-slim-bullseye
 
-RUN echo "deb [trusted=yes] http://archive.debian.org/debian buster main contrib non-free" > /etc/apt/sources.list && \
-    echo "deb [trusted=yes] http://archive.debian.org/debian buster-updates main contrib non-free" >> /etc/apt/sources.list && \
-    echo "deb [trusted=yes] http://archive.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list && \
-    echo "deb [trusted=yes] http://archive.debian.org/debian buster-backports main contrib non-free" >> /etc/apt/sources.list && \
-    apt-get -o Acquire::Check-Valid-Until=false update && \
-    apt-get -y --no-install-recommends upgrade && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         openjdk-11-jre-headless \
-        wget libarchive13 libcurl4 libxml2 python-magic git && \
-    rm -rf /var/lib/apt/lists/*
+        wget libarchive13 libcurl4 libxml2 python3-magic git software-properties-common && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN wget https://github.com/srcML/srcML/releases/download/v1.0.0/srcml_1.0.0-1_ubuntu18.04.deb && \
-    dpkg -i srcml_1.0.0-1_ubuntu18.04.deb || apt-get -f install -y && \
+    apt-get update && \
+    apt-get install -y ./srcml_1.0.0-1_ubuntu18.04.deb && \
     rm srcml_1.0.0-1_ubuntu18.04.deb
 
-
+    
 WORKDIR /usr/src/app
 
 COPY requirements.txt .
