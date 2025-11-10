@@ -41,7 +41,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
 
         bug_inducing_commits = set()
         # repo_name = commit['repo_name']
-        repo_name = "JabRef/jabref"  # for testing purposes
+        repo_name = "jabref"  # for testing purposes
         repo_url = f'https://test:test@github.com/{repo_name}.git'  # using test:test as git login to skip private repos during clone
         fix_commit = commit['fix_commit_hash']
 
