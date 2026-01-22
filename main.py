@@ -133,7 +133,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
         #     break
 
         bug_inducing_commits = set()
-        repo_name = commit['repo_name']
+        repo_name = commit['repo_name'].split('/')[-1]
         repo_url = f'https://test:test@github.com/{repo_name}.git'  # using test:test as git login to skip private repos during clone
         fix_commit = commit['fix_commit_hash']
 
