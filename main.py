@@ -208,6 +208,7 @@ if __name__ == "__main__":
         conf = yaml.safe_load(f)
 
     log.info(f"parsed conf yml '{args.conf_file}': {conf}")
+    log.info(f"Arguments: {args}")
     szz_name = conf['szz_name']
 
     out_dir = 'out'
