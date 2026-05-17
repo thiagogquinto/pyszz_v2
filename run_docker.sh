@@ -3,11 +3,13 @@
 bugfix_commits_file=$1
 conf_file=$2
 repos_dir=$3
+date_filter=$4
 
 echo +++ PARAMS +++
 echo bugfix_commits_file=$bugfix_commits_file
 echo conf_file=$conf_file
 echo repos_dir=$repos_dir
+echo date_filter=$date_filter
 
 
 docker build -t pyszz .
@@ -19,4 +21,4 @@ docker run \
         -v $(pwd)/$bugfix_commits_file:/usr/src/app/bugfix_commits.json \
         -v $(pwd)/$conf_file:/usr/src/app/conf.yml \
         -v $(pwd)/$repos_dir:/usr/src/app/cloned \
-        pyszz bugfix_commits.json conf.yml cloned/
+        pyszz bugfix_commits.json conf.yml cloned/ "$date_filter"
