@@ -193,6 +193,8 @@ if __name__ == "__main__":
     parser.add_argument('repos_dir', type=str, nargs='?', help='/path/to/repo-directory')
     parser.add_argument('--date_filter', action='store_true', help='Whether to filter candidate BICs using the issue date. If set, the issue date is parsed from the input JSON and used to filter out candidate BICs that are after the issue date.')
 
+    args = parser.parse_args()
+
     if not os.path.isfile(args.input_json):
         print(args.input_json)
         os.system("pwd")
