@@ -8,7 +8,8 @@ file_ext_to_parse:
  - java
  
 ### filter commits using issue_date field
-issue_date_filter: false
+# issue_date_filter: false
+# on this version, this argument is passed alognside the command line arguments, and not as a parameter in the configuration file. This is because it is only used for filtering candidate BICs, and not for filtering commits during blame.
 
 ### ignore during blame all the commits specified in revs file
 # ignore_revs_file_path: /path/to/revs/file
