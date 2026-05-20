@@ -57,9 +57,11 @@ class PyDrillerSZZ(AbstractSZZ):
 
         if kwargs.get('issue_date_filter', False):
             bug_introd_commits = filter_by_date(bug_introd_commits, kwargs['issue_date'])
-            if len(bug_introd_commits) > 0:
-                latest_bug_introd_commits = {max(bug_introd_commits, key=lambda x: x.committed_date)}
         else:
             log.info("Not filtering by issue date.")
 
-        return [latest_bug_introd_commits]
+        if len(bug_introd_commits) > 0:
+            latest_bic = max(bug_introd_commits, key=lambda c: c.committed_date)
+            log.info(f"selected bug introducing commit: {latest_bic.hexsha}")
+            return {latest_bic}
+        return set()

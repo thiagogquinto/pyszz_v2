@@ -24,7 +24,8 @@ import random
 log.basicConfig(level=log.INFO, format='%(asctime)s :: %(funcName)s - %(levelname)s :: %(message)s')
 log.getLogger('pydriller').setLevel(log.WARNING)
 
-TIME_LIMIT = 5 * 3600 + 30 * 60  # 5 hours + 30 minutes
+
+TIME_LIMIT = 5 * 3600 + 20 * 60  # 5 hours + 20 minutes
 
 def is_empty_or_dash(value):
     if value == [] or value == "-":
@@ -33,14 +34,16 @@ def is_empty_or_dash(value):
 
 def define_bic(rszz, pdszz):
     if not is_empty_or_dash(rszz):
-       bic = rszz
+        method_type = "rszz"
+        bic = rszz
     elif not is_empty_or_dash(pdszz):
-        value = pdszz[0]
-        bic = [value]
+        method_type = "pdszz"
+        bic = pdszz
     else:
-       bic = []
+        method_type = "none"
+        bic = []
 
-    return bic
+    return bic, method_type
 
 def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter: bool):
 
@@ -170,8 +173,9 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
 
         pd_bic = bugfix_commits[i].pop("inducing_commit_hash_pd", None)
         r_bic = bugfix_commits[i].pop("inducing_commit_hash_pyszz", None)
-        final_bic = define_bic(r_bic, pd_bic)
+        final_bic, method_type = define_bic(r_bic, pd_bic)
         bugfix_commits[i]['bic'] = final_bic
+        bugfix_commits[i]['method_type'] = method_type
 
     with open(out_json, 'w') as out:
         json.dump(bugfix_commits, out, indent=4)
