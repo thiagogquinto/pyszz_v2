@@ -6,6 +6,9 @@ repos_dir=$3
 iteration_number=$4
 date_filter=$5
 
+# use the basename of the passed bugfix commits file inside the container
+bugfix_commits_basename=$(basename "$bugfix_commits_file")
+
 echo +++ PARAMS +++
 echo bugfix_commits_file=$bugfix_commits_file
 echo conf_file=$conf_file
@@ -20,7 +23,7 @@ mkdir -p out
 # replace with `docker run -d` to run the container in detached mode
 docker run \
         -v $PWD/out:/usr/src/app/out \
-        -v $(pwd)/$bugfix_commits_file:/usr/src/app/bugfix_commits.json \
+        -v $(pwd)/$bugfix_commits_file:/usr/src/app/$bugfix_commits_basename \
         -v $(pwd)/$conf_file:/usr/src/app/conf.yml \
         -v $(pwd)/$repos_dir:/usr/src/app/cloned \
-        pyszz bugfix_commits.json conf.yml cloned/ $iteration_number $date_filter
+        pyszz $bugfix_commits_basename conf.yml cloned/ $iteration_number $date_filter
