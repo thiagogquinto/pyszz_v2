@@ -195,8 +195,9 @@ if __name__ == "__main__":
     parser.add_argument('input_json', type=str, help='/path/to/bug-fixes.json')
     parser.add_argument('conf_file', type=str, help='/path/to/configuration-file.yml')
     parser.add_argument('repos_dir', type=str, nargs='?', help='/path/to/repo-directory')
+    parser.add_argument('iteration_number', type=int, help='iteration number of the commit chain')
     parser.add_argument('--date_filter', action='store_true', help='Whether to filter candidate BICs using the issue date. If set, the issue date is parsed from the input JSON and used to filter out candidate BICs that are after the issue date.')
-
+    
     args = parser.parse_args()
 
     if not os.path.isfile(args.input_json):
@@ -215,11 +216,11 @@ if __name__ == "__main__":
     log.info(f"Arguments: {args}")
     szz_name = conf['szz_name']
 
-    out_dir = 'out'
+    out_dir = os.path.join('out', f'v{args.iteration_number}') if args.iteration_number is not None else 'out'
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
     conf_file_name = Path(args.conf_file).name.split('.')[0]
-    out_json = os.path.join(out_dir, 'bics.json')
+    out_json = os.path.join(out_dir, args.input_json.split('/')[-1])
 
     if not szz_name:
         log.error('The configuration file does not define the SZZ name. Please, fix.')
