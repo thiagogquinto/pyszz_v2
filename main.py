@@ -28,9 +28,22 @@ log.getLogger('pydriller').setLevel(log.WARNING)
 TIME_LIMIT = 5 * 3600 + 20 * 60  # 5 hours + 20 minutes
 
 def is_empty_or_dash(value):
-    if value == [] or value == "-":
+    if value is None or value == "-":
+        return True
+    if isinstance(value, (list, set, tuple, dict)) and len(value) == 0:
         return True
     return False
+
+def normalize_szz_result(result):
+    if result == '-':
+        return '-'
+    if result is None:
+        return None
+
+    try:
+        return [bic.hexsha for bic in result if bic]
+    except Exception:
+        return result
 
 def define_bic(rszz, pdszz):
     if not is_empty_or_dash(rszz):
@@ -45,14 +58,10 @@ def define_bic(rszz, pdszz):
 
     return bic, method_type
 
-def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter: bool):
+def main(input_json: str, out_json: str, conf: Dict, repos_dir: str):
 
     start_time = ts()
 
-
-    if date_filter:
-        log.info("Date filter is enabled. Candidate BICs will be filtered using the issue date parsed from the input JSON.")
-        
     with open(input_json, 'r') as in_file:
         bugfix_commits = json.loads(in_file.read())
 
@@ -63,7 +72,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
             imp_files = b_szz.get_impacted_files(fix_commit_hash=fix_commit, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
             return b_szz.find_bic(fix_commit_hash=fix_commit,
                                         impacted_files=imp_files,
-                                        issue_date_filter=date_filter,
+                                        issue_date_filter=conf.get('issue_date_filter'),
                                         issue_date=issue_date)
         elif szz_name == 'ag':
             ag_szz = AGSZZ(repo_full_name=repo_name, repo_url=repo_url, repos_dir=repos_dir)
@@ -71,7 +80,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
             return ag_szz.find_bic(fix_commit_hash=fix_commit,
                                         impacted_files=imp_files,
                                         max_change_size=conf.get('max_change_size'),
-                                        issue_date_filter=date_filter,
+                                        issue_date_filter=conf.get('issue_date_filter'),
                                         issue_date=issue_date)
         elif szz_name == 'ma':
             ma_szz = MASZZ(repo_full_name=repo_name, repo_url=repo_url, repos_dir=repos_dir)
@@ -80,7 +89,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
                                         impacted_files=imp_files,
                                         max_change_size=conf.get('max_change_size'),
                                         detect_move_from_other_files=DetectLineMoved(conf.get('detect_move_from_other_files')),
-                                        issue_date_filter=date_filter,
+                                        issue_date_filter=conf.get('issue_date_filter'),
                                         issue_date=issue_date,
                                         filter_revert_commits=conf.get('filter_revert_commits', False))
         elif szz_name == 'r':
@@ -93,7 +102,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
                                         impacted_files=imp_files,
                                         max_change_size=conf.get('max_change_size'),
                                         detect_move_from_other_files=DetectLineMoved(conf.get('detect_move_from_other_files')),
-                                        issue_date_filter=date_filter,
+                                        issue_date_filter=conf.get('issue_date_filter'),
                                         issue_date=issue_date,
                                         filter_revert_commits=conf.get('filter_revert_commits', False))
         elif szz_name == 'l':
@@ -103,7 +112,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
                                         impacted_files=imp_files,
                                         max_change_size=conf.get('max_change_size'),
                                         detect_move_from_other_files=DetectLineMoved(conf.get('detect_move_from_other_files')),
-                                        issue_date_filter=date_filter,
+                                        issue_date_filter=conf.get('issue_date_filter'),
                                         issue_date=issue_date,
                                         filter_revert_commits=conf.get('filter_revert_commits', False))
         elif szz_name == 'ra':
@@ -113,7 +122,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
                                         impacted_files=imp_files,
                                         max_change_size=conf.get('max_change_size'),
                                         detect_move_from_other_files=DetectLineMoved(conf.get('detect_move_from_other_files')),
-                                        issue_date_filter=date_filter,
+                                        issue_date_filter=conf.get('issue_date_filter'),
                                         issue_date=issue_date,
                                         filter_revert_commits=conf.get('filter_revert_commits', False))
         elif szz_name == 'pd':
@@ -121,7 +130,7 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
             imp_files = pd_szz.get_impacted_files(fix_commit_hash=fix_commit, file_ext_to_parse=conf.get('file_ext_to_parse'), only_deleted_lines=True)
             return pd_szz.find_bic(fix_commit_hash=fix_commit,
                                                    impacted_files=imp_files,
-                                                   issue_date_filter=date_filter,
+                                                   issue_date_filter=conf.get('issue_date_filter'),
                                                    issue_date=issue_date)
         elif szz_name == 'a':
             a_szz = ASZZ(repo_full_name=repo_name, repo_url=repo_url, repos_dir=repos_dir)
@@ -147,35 +156,27 @@ def main(input_json: str, out_json: str, conf: Dict, repos_dir: str, date_filter
         log.info(f'{i + 1} of {tot}: {repo_name} {fix_commit}')
         
         issue_date = None
-        if date_filter:
+        if conf.get('issue_date_filter', None):
             issue_date = parse_issue_date(commit)
         
         szz_names = conf.get('szz_name')
-        for szz in szz_names:
-            result = run_szz(szz, repo_name, repo_url, fix_commit, conf, issue_date, repos_dir)
-            log.info(f"result ({szz}): {result}")
-            if szz == 'r':
-                key = "inducing_commit_hash_pyszz"
-            elif szz == 'pd':
-                key = "inducing_commit_hash_pd"
+        r_result = run_szz('r', repo_name, repo_url, fix_commit, conf, issue_date, repos_dir)
+        log.info(f"result (r): {r_result}")
+        r_bic = normalize_szz_result(r_result)
+        if not is_empty_or_dash(r_bic):
+            bugfix_commits[i]["bic"] = r_bic
+            bugfix_commits[i]["method_type"] = "rszz"
+        else:
+            pd_result = run_szz('pd', repo_name, repo_url, fix_commit, conf, issue_date, repos_dir)
+            log.info(f"result (pd): {pd_result}")
+            pd_bic = normalize_szz_result(pd_result)
+            if not is_empty_or_dash(pd_bic):
+                bugfix_commits[i]["bic"] = pd_bic
+                bugfix_commits[i]["method_type"] = "pdszz"
             else:
-                key = f"inducing_commit_hash_{szz}"
+                bugfix_commits[i]["bic"] = []
+                bugfix_commits[i]["method_type"] = "none"
 
-            if result == '-':
-                bugfix_commits[i][key] = '-'
-            elif result is None:
-                bugfix_commits[i][key] = None
-            else:
-                try:
-                    bugfix_commits[i][key] = [bic.hexsha for bic in result if bic]
-                except Exception:
-                    bugfix_commits[i][key] = result
-
-        pd_bic = bugfix_commits[i].pop("inducing_commit_hash_pd", None)
-        r_bic = bugfix_commits[i].pop("inducing_commit_hash_pyszz", None)
-        final_bic, method_type = define_bic(r_bic, pd_bic)
-        bugfix_commits[i]['bic'] = final_bic
-        bugfix_commits[i]['method_type'] = method_type
 
     with open(out_json, 'w') as out:
         json.dump(bugfix_commits, out, indent=4)
@@ -195,8 +196,6 @@ if __name__ == "__main__":
     parser.add_argument('input_json', type=str, help='/path/to/bug-fixes.json')
     parser.add_argument('conf_file', type=str, help='/path/to/configuration-file.yml')
     parser.add_argument('repos_dir', type=str, nargs='?', help='/path/to/repo-directory')
-    parser.add_argument('iteration_number', type=int, help='iteration number of the commit chain')
-    parser.add_argument('--date_filter', action='store_true', help='Whether to filter candidate BICs using the issue date. If set, the issue date is parsed from the input JSON and used to filter out candidate BICs that are after the issue date.')
     
     args = parser.parse_args()
 
@@ -216,7 +215,7 @@ if __name__ == "__main__":
     log.info(f"Arguments: {args}")
     szz_name = conf['szz_name']
 
-    out_dir = os.path.join('out', f'v{args.iteration_number}') if args.iteration_number is not None else 'out'
+    out_dir = 'out'
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
     conf_file_name = Path(args.conf_file).name.split('.')[0]
@@ -228,4 +227,4 @@ if __name__ == "__main__":
 
     log.info(f'Launching {szz_name}-szz')
 
-    main(args.input_json, out_json, conf, args.repos_dir, args.date_filter)
+    main(args.input_json, out_json, conf, args.repos_dir)
